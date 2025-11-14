@@ -141,7 +141,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-import os
+
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 
@@ -150,18 +150,25 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Choose one:
+LOG_DIR = "/tmp"                     # ❗ Always works
+
+os.makedirs(LOG_DIR, exist_ok=True)
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+
     "formatters": {
         "json": {
             "format": (
-                '{"time": "%(asctime)s", "level": "%(levelname)s", "message": "%(message)s", '
-                '"logger": "%(name)s", "correlation_id": "%(cid)s"}'
+                '{"time": "%(asctime)s", "level": "%(levelname)s", '
+                '"message": "%(message)s", "logger": "%(name)s", '
+                '"correlation_id": "%(cid)s"}'
             )
         },
     },
+
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
@@ -174,6 +181,7 @@ LOGGING = {
             "level": "INFO",
         },
     },
+
     "root": {
         "handlers": ["console", "file"],
         "level": "INFO",
