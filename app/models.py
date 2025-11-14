@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 from django.utils import timezone
+
 class Template(models.Model):
     template_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=255)
