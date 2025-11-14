@@ -155,34 +155,28 @@ LOG_DIR = "/tmp"                     # ❗ Always works
 
 os.makedirs(LOG_DIR, exist_ok=True)
 
+
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-
     "formatters": {
         "json": {
             "format": (
-                '{"time": "%(asctime)s", "level": "%(levelname)s", '
-                '"message": "%(message)s", "logger": "%(name)s", '
-                         )
+                '{"time": "%(asctime)s", "level": "%(levelname)s", "message": "%(message)s"}'
+            )
         },
     },
-
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "json",
         },
-        "file": {
-            "class": "logging.FileHandler",
-            "filename": os.path.join(LOG_DIR, "django.log"),
-            "formatter": "json",
-            "level": "INFO",
-        },
+   
     },
 
     "root": {
-        "handlers": ["console", "file"],
+        "handlers": ["console"], 
         "level": "INFO",
     },
 }
