@@ -123,6 +123,8 @@ TEMPLATES = [
 # DATABASES
 # -------------------------------
 # Local: SQLite, Production: can use DATABASE_URL with PostgreSQL
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 DATABASES = {
     'default': {
         'ENGINE': config('DATABASE_ENGINE', default='django.db.backends.sqlite3'),
@@ -135,7 +137,7 @@ DATABASES = {
 }
 
 # Optional: parse DATABASE_URL if you deploy to Leapcell/PostgreSQL
-DATABASE_URL = os.getenv("DATABASE_URL")
+
 if DATABASE_URL:
     DATABASES['default'] = dj_database_url.parse(DATABASE_URL, conn_max_age=600)
 
@@ -165,6 +167,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # -------------------------------
 # LOGGING CONFIGURATION
 # -------------------------------
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -180,15 +183,11 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "json",
         },
-        "file": {
-            "class": "logging.FileHandler",
-            "filename": os.path.join(LOG_DIR, "app.log"),
-            "formatter": "json",
-        },
     },
     "root": {
-        "handlers": ["console", "file"],
+        "handlers": ["console"],
         "level": "INFO",
     },
 }
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
