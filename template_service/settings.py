@@ -164,8 +164,7 @@ LOGGING = {
             "format": (
                 '{"time": "%(asctime)s", "level": "%(levelname)s", '
                 '"message": "%(message)s", "logger": "%(name)s", '
-                '"correlation_id": "%(cid)s"}'
-            )
+                         )
         },
     },
 
