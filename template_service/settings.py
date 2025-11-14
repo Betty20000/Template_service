@@ -1,16 +1,21 @@
-
 from kafka import KafkaProducer
 from pathlib import Path
 from pythonjsonlogger import jsonlogger
 import os
 import logging
 import dj_database_url
-
-
+from dotenv import load_dotenv
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+# Load .env if exists
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+
+
+
 
 LOG_DIR = os.path.join(BASE_DIR, "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -24,21 +29,22 @@ if USE_KAFKA:
     except Exception:
         producer = None
 
+# SECRET KEY
+SECRET_KEY = os.getenv("SECRET_KEY", "local-secret-key-for-dev")
+
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 
-SECRET_KEY = 'django-insecure-qk^!cwh1*a%db0sgy!7gi$q#y!glw*s+e_j!!6snw7bq2c+qad'
+
 KAFKA_BOOTSTRAP_SERVERS = ["kafka:9092"]
 KAFKA_TEMPLATE_TOPIC = "template_render_requests"
 KAFKA_RESPONSE_TOPIC = "template_render_responses"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ["*"]
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -49,13 +55,12 @@ INSTALLED_APPS = [
     "app",
     "rest_framework",
     "django_prometheus",
-
 ]
-#"django_cid.middleware.CidMiddleware",
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
     "app.middleware.correlation.CorrelationIdMiddleware",
-    
     "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -66,8 +71,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'template_service.urls'
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+
+ROOT_URLCONF = 'template_service.urls'
 
 TEMPLATES = [
     {
@@ -75,7 +82,6 @@ TEMPLATES = [
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
-
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
@@ -91,71 +97,50 @@ TEMPLATES = [
         },
     },
 ]
-# Jinja2 Template Engine
 
 WSGI_APPLICATION = 'template_service.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-DATABASE_ENGINE = os.getenv("DATABASE_ENGINE", "sqlite")
-
-
-DATABASES = {
-    "default": dj_database_url.config(default="sqlite:///db.sqlite3")
-}
-
-
+# -------------------------------
+# DATABASE: PostgreSQL setup
+# -------------------------------
+if DATABASE_URL:
+    # Production / Leapcell
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+else:
+    # Local development fallback
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
 STATIC_URL = 'static/'
-
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Choose one:
-LOG_DIR = "/tmp"                     # ❗ Always works
-
+# Logging
+LOG_DIR = "/tmp"
 os.makedirs(LOG_DIR, exist_ok=True)
-
-
 
 LOGGING = {
     "version": 1,
@@ -172,11 +157,9 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "json",
         },
-   
     },
-
     "root": {
-        "handlers": ["console"], 
+        "handlers": ["console"],
         "level": "INFO",
     },
 }
