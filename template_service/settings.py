@@ -1,11 +1,11 @@
 
 from kafka import KafkaProducer
 from pathlib import Path
-import os
+from pythonjsonlogger import jsonlogger
 import os
 import logging
-from pythonjsonlogger import jsonlogger
-from kafka import KafkaProducer
+
+
 
 
 
@@ -155,6 +155,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+import os
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
